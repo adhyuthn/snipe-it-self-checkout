@@ -16,11 +16,11 @@ BASE_URL = 'http://testsnipe.eastus.cloudapp.azure.com'
 
 @app.route('/self-checkout')
 def index():
-    return render_template('index.html')
+    return render_template('index.jinja')
 
 @app.route('/self-checkout/login')   
 def home():
-    return render_template('login.html')
+    return render_template('login.jinja')
 
 @app.route('/self-checkout/authorize') 
 def login():
@@ -73,7 +73,7 @@ def callback():
     user_id = user["id"]
     print("ASSETS = ", asset_data)
     print("USER = ", user_data)
-    return render_template('checkout-main.html',
+    return render_template('checkout-main.jinja',
                            asset_data=asset_data, user_data=user_data,
                            asset_url=f'{BASE_URL}/hardware/{asset_id}')
 
@@ -104,7 +104,7 @@ def confirm():
                                       json=payload, 
                                       headers=headers)
     checkout_data = response_checkout.json()
-    return render_template('confirmation.html', 
+    return render_template('confirmation.jinja', 
                            checkout_data=checkout_data, 
                            asset_tag=asset_tag)
 
