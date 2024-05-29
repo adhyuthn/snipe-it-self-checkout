@@ -9,8 +9,9 @@ CLIENT_SECRET = 'vDlOuqrvODeKNgnE0CYwsZKYIr33uX81h29fYL20'
 RIGBRO_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiZGY1Yzc4MWUwMDA0MmE4MGNjNjBhZWFmOWU5MjAzZGJkOGI1NjI2NTcxMDVjNzIyZmE5ZWI2NDc2MGU5NWU4ZGJjNGU4YzdlOWUzNjlmNjIiLCJpYXQiOjE3MTY5ODgzNDYuNDAyMDIsIm5iZiI6MTcxNjk4ODM0Ni40MDIwMjIsImV4cCI6MjE5MDI4NzU0Ni4zOTY2LCJzdWIiOiIxMiIsInNjb3BlcyI6W119.2uUIYmCBLVSXq7ur9S1Fd6RDOipk33QfhNensSoT_O-1Zl72YLHnAD3HTaha8F4gU5U7Z_W0UKZw5Z9zFigqFoIF3tAYscYBrGm0fZPXd4KSO80PREjjWf9Ah2yyUIKeePFbirud038Mg_bW0ds0QXZNjZCByIwD5zo0LQaAw6aDQ9jQI7Rxx0oAdWKiJAadOx6DyopeKPlaJRDfTU1CpbT0vpBdAzY-6rPOeSkgq_IFPUrkltKHoS1yHwWTPN12tZpJuumlW1kQLgqM1t24gYFttHnnYzKXBih2-1Vcf6_TXjuLCpWKpbRAr6EQTwvuFjGiOpqyMy-49zRXifoOXjyQv8FC-SkFYk08rDXYr1cewDLNig-U42O462cex2oS4IWQZY-jA2R_mO2Rf_ZhMniava6GgP3k7NBW49Rv7L-ceoCsc186mSq109cSiGgc-03tOAlRqPT2cZRLZ2SV1Uh26cOBUiJpjUMDdlzHHwbVFHUkvdC5w_gCXCdMzhIZxWGpgEOW_TYQPPEZMN4u7zF_xrTkNFeTA5ovB5q8fFYjmR911RiwBWvdwpjQrJCIDuSjgPOKdsNm7tDSmyFdHVuaPxPvMC3WQF6196_VcwW6OG_qPN685cozwfNMb1kKv7WORVmXPtOJ86TPrWYXeOIdcyYdSbbxLsYmW0OqR3c'
 AUTHORIZATION_BASE_URL = 'http://testsnipe.eastus.cloudapp.azure.com/oauth/authorize'
 TOKEN_URL = 'http://testsnipe.eastus.cloudapp.azure.com/oauth/token'
-REDIRECT_URL = 'http://localhost:5000/self-checkout/callback' ## IF YOU CAHNGE THIS, chagne it IN snipe-it  snipe it OAUTH settings too.
+REDIRECT_URL = 'http://localhost:5000/self-checkout/callback' # NOTE: OAuth url in snipe should match, else it is fucked.
 API_BASE_URL = 'http://testsnipe.eastus.cloudapp.azure.com/api/v1'
+BASE_URL = 'http://testsnipe.eastus.cloudapp.azure.com'
 
 
 @app.route('/self-checkout')
@@ -31,7 +32,7 @@ def callback():
     global asset_tag, asset_id, user_id
     code = request.args.get('code')
     token_response = requests.post(TOKEN_URL, data={
-        #OAuth Docs specify uri, but that didn't work for me
+        #OAuth Docs specify uri, but that didn't work for me, idk why
         'grant_type': 'authorization_code',
         'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET,
@@ -48,7 +49,8 @@ def callback():
                 "accept": "application/json",
                 'Authorization': f'Bearer {access_token}'
               }
-    response_assets = requests.get(f'{API_BASE_URL}/hardware/bytag/{asset_tag}?deleted=false', headers=headers)
+    response_assets = requests.get(f'{API_BASE_URL}/hardware/bytag/{asset_tag}?deleted=false',
+                                   headers=headers)
     assets = response_assets.json()
     print("ASSETS = ", assets)
     asset_data = {
@@ -60,7 +62,8 @@ def callback():
     }
     asset_id = assets["id"]
     print("ENTHA", asset_data)
-    response_user = requests.get(f'{API_BASE_URL}/users/me', headers=headers)
+    response_user = requests.get(f'{API_BASE_URL}/users/me',
+                                 headers=headers)
     user = response_user.json()
     user_data = {
                   "Name": user["name"],
@@ -70,7 +73,9 @@ def callback():
     user_id = user["id"]
     print("ASSETS = ", asset_data)
     print("USER = ", user_data)
-    return render_template('checkout-main.html', asset_data=asset_data, user_data=user_data)
+    return render_template('checkout-main.html',
+                           asset_data=asset_data, user_data=user_data,
+                           asset_url=f'{BASE_URL}/hardware/{asset_id}')
 
 @app.route('/self-checkout/assets/<tag>')
 def get_assets(tag):
@@ -99,7 +104,9 @@ def confirm():
                                       json=payload, 
                                       headers=headers)
     checkout_data = response_checkout.json()
-    return render_template('confirmation.html', checkout_data=checkout_data, asset_tag=asset_tag)
+    return render_template('confirmation.html', 
+                           checkout_data=checkout_data, 
+                           asset_tag=asset_tag)
 
 if __name__ == '__main__':
     app.run(debug=True)

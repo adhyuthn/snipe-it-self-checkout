@@ -11,13 +11,13 @@
     </head>
     <body>
         {% include 'navbar.html' %}    
-        <div id="main-container" class="bg-body-tertiary rounded-4">
+        <div id="main-container" class="bg-body-tertiary shadow-sm rounded-4">
             <h1>Checkout</h1>
             <div class="container asset-container">
                 {{ render_keyval(asset_data) }}
                 <img src="{{ asset_data['Image'] }}" class="image-fluid rounded" alt="Asset" style="margin-top: 2%;">
             </div>
-            <button type="button" class="btn btn-outline-primary">View Resource Page</button>
+            <a class="btn btn-outline-primary" href={{ asset_url }} target="_blank">View Resource Page</a>
             <h1 class="border-top border-3" id="user-info-header">User Info</h1>
             <div class="container asset-container">
                 {{ render_keyval(user_data) }}
