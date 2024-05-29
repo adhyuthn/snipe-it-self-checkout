@@ -11,12 +11,13 @@
     {% include 'navbar.html' %}
     <div id="main-container">
         <h1>
-            Login with Snipe-IT.
+            {{ checkout_data["messages"] }}
         </h1>
-        <p>
-            In the next page click on the "Authorize" button to login with Snipe-IT.
-            *(If cookies are enabled you will only have to do this once.)
-        </p>
+        <div class="alert alert-primary" role="alert">
+            <p><span style="font-weight: bold;">Asset:</span> {{ asset_tag }}</p>
+            <p><span style="font-weight: bold;">Asset ID:</span> {{ checkout_data["payload"]["asset"] }}</p>
+            <p><span style="font-weight: bold;">Status:</span> {{ checkout_data["status"] }}</p>
+        </div>
         <a class="btn btn-primary" href="/self-checkout/authorize" role="button">Login with Snipe-IT</a>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     </div>

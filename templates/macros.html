@@ -1,0 +1,14 @@
+{% macro render_keyval(dict) %}
+    {% for i in dict %}
+        {% if i!="Image" %}
+            <div class="row">
+                <div class="col-3" class="asset-fields" style="font-weight: bold;">
+                    {{i}}
+                </div>
+                <div class="col">
+                    {{dict[i]}}
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
