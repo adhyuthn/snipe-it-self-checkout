@@ -1,4 +1,4 @@
-{% from 'macros.jinja' import render_keyval %}
+{% from 'macros.j2' import render_keyval %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -10,7 +10,7 @@
         <title>Checkout Resource</title>
     </head>
     <body>
-        {% include 'navbar.jinja' %}    
+        {% include 'navbar.html' %}    
         <div id="main-container" class="bg-body-tertiary shadow-sm rounded-4">
             <h1>Checkout</h1>
             <div class="container asset-container">

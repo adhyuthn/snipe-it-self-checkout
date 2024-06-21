@@ -1,26 +1,42 @@
 from flask import Flask, redirect, request, session, url_for, render_template
 import requests
+import configparser
 
 app = Flask(__name__)
-app.secret_key = 'asfn32ewowiif'
 
-CLIENT_ID = '3'
-CLIENT_SECRET = 'vDlOuqrvODeKNgnE0CYwsZKYIr33uX81h29fYL20'
-RIGBRO_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiZGY1Yzc4MWUwMDA0MmE4MGNjNjBhZWFmOWU5MjAzZGJkOGI1NjI2NTcxMDVjNzIyZmE5ZWI2NDc2MGU5NWU4ZGJjNGU4YzdlOWUzNjlmNjIiLCJpYXQiOjE3MTY5ODgzNDYuNDAyMDIsIm5iZiI6MTcxNjk4ODM0Ni40MDIwMjIsImV4cCI6MjE5MDI4NzU0Ni4zOTY2LCJzdWIiOiIxMiIsInNjb3BlcyI6W119.2uUIYmCBLVSXq7ur9S1Fd6RDOipk33QfhNensSoT_O-1Zl72YLHnAD3HTaha8F4gU5U7Z_W0UKZw5Z9zFigqFoIF3tAYscYBrGm0fZPXd4KSO80PREjjWf9Ah2yyUIKeePFbirud038Mg_bW0ds0QXZNjZCByIwD5zo0LQaAw6aDQ9jQI7Rxx0oAdWKiJAadOx6DyopeKPlaJRDfTU1CpbT0vpBdAzY-6rPOeSkgq_IFPUrkltKHoS1yHwWTPN12tZpJuumlW1kQLgqM1t24gYFttHnnYzKXBih2-1Vcf6_TXjuLCpWKpbRAr6EQTwvuFjGiOpqyMy-49zRXifoOXjyQv8FC-SkFYk08rDXYr1cewDLNig-U42O462cex2oS4IWQZY-jA2R_mO2Rf_ZhMniava6GgP3k7NBW49Rv7L-ceoCsc186mSq109cSiGgc-03tOAlRqPT2cZRLZ2SV1Uh26cOBUiJpjUMDdlzHHwbVFHUkvdC5w_gCXCdMzhIZxWGpgEOW_TYQPPEZMN4u7zF_xrTkNFeTA5ovB5q8fFYjmR911RiwBWvdwpjQrJCIDuSjgPOKdsNm7tDSmyFdHVuaPxPvMC3WQF6196_VcwW6OG_qPN685cozwfNMb1kKv7WORVmXPtOJ86TPrWYXeOIdcyYdSbbxLsYmW0OqR3c'
-AUTHORIZATION_BASE_URL = 'http://testsnipe.eastus.cloudapp.azure.com/oauth/authorize'
-TOKEN_URL = 'http://testsnipe.eastus.cloudapp.azure.com/oauth/token'
-REDIRECT_URL = 'http://localhost:5000/self-checkout/callback' # NOTE: OAuth url in snipe should match, else it is fucked.
-API_BASE_URL = 'http://testsnipe.eastus.cloudapp.azure.com/api/v1'
-BASE_URL = 'http://testsnipe.eastus.cloudapp.azure.com'
+config = configparser.ConfigParser()
+config.read('config.ini')
 
+app.secret_key         = config['KEYS']['FLASK_APP_KEY']
+CLIENT_ID              = config['KEYS']['CLIENT_ID']
+CLIENT_SECRET          = config['KEYS']['CLIENT_SECRET']
+CHECKBOT_KEY           = config['KEYS']['CHECKBOT_KEY']
+AUTHORIZATION_BASE_URL = config['URLS']['AUTHORIZATION_BASE_URL']
+TOKEN_URL              = config['URLS']['TOKEN_URL']
+REDIRECT_URL           = config['URLS']['REDIRECT_URL'] # NOTE: OAuth url in snipe should match, else it is fucked.
+API_BASE_URL           = config['URLS']['API_BASE_URL']
+BASE_URL               = config['URLS']['BASE_URL']
+
+
+@app.before_request
+def logger():
+    print("___________________________")
+    print("URL", request.base_url)
+    print("Headers:", request.headers)
+    # print("Body: ", request.get_data())
+    print("---------------------------")
 
 @app.route('/self-checkout')
 def index():
-    return render_template('index.jinja')
+    return render_template('index.j2')
 
 @app.route('/self-checkout/login')   
 def home():
-    return render_template('login.jinja')
+    print("ACCESS TOKEN = ", session.get('access_token'))
+    if not session.get('access_token'):
+        return render_template('login.j2', sign_state = 0)
+    else:
+        return render_template('login.j2', sign_state = 1)
 
 @app.route('/self-checkout/authorize') 
 def login():
@@ -61,7 +77,6 @@ def callback():
         "Image": assets["image"]
     }
     asset_id = assets["id"]
-    print("ENTHA", asset_data)
     response_user = requests.get(f'{API_BASE_URL}/users/me',
                                  headers=headers)
     user = response_user.json()
@@ -73,7 +88,7 @@ def callback():
     user_id = user["id"]
     print("ASSETS = ", asset_data)
     print("USER = ", user_data)
-    return render_template('checkout-main.jinja',
+    return render_template('checkout-main.j2',
                            asset_data=asset_data, user_data=user_data,
                            asset_url=f'{BASE_URL}/hardware/{asset_id}')
 
@@ -82,6 +97,7 @@ def get_assets(tag):
     global asset_tag
     asset_tag = tag
     access_token = session.get('access_token')
+    print("ACESSSSSS ===>", access_token)
     if not access_token:
         return redirect(url_for('login'))
     return redirect(url_for('callback'))
@@ -91,7 +107,7 @@ def confirm():
     global asset_id, user_id, asset_tag
     headers = {
                 "accept": "application/json",
-                "Authorization": f'Bearer {RIGBRO_KEY}',
+                "Authorization": f'Bearer {CHECKBOT_KEY}',
                 "content-type": "application/json"
               }
     payload = {
@@ -104,7 +120,7 @@ def confirm():
                                       json=payload, 
                                       headers=headers)
     checkout_data = response_checkout.json()
-    return render_template('confirmation.jinja', 
+    return render_template('confirmation.j2', 
                            checkout_data=checkout_data, 
                            asset_tag=asset_tag)
 
