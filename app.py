@@ -23,6 +23,7 @@ def logger():
     print("___________________________")
     print("URL", request.base_url)
     print("Headers:", request.headers)
+    print("Base Path: ", request.base_url)
     # print("Body: ", request.get_data())
     print("---------------------------")
 
