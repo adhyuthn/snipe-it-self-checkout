@@ -7,7 +7,7 @@ According to this ![issue](https://github.com/snipe/snipe-it/issues/5994#issueco
 - No additional login is required, uses the Oauth  from Snipe-IT. 
 - Simply scan the QR code on the asset and you are good to go.
 
-## Installation
+### Installation
 - Assuming you have Snipe-IT installed and running
 - Install flask using `pip install flask`
 - Run the `runme.sh` script as `sudo`
@@ -17,4 +17,7 @@ According to this ![issue](https://github.com/snipe/snipe-it/issues/5994#issueco
 - Setup your apache server to serve the app using `mod_wsgi`.
 - Restart apache server
 
-
+### TODO
+- [ ] Apache conf to allow both Snipe-IT and app to run on the same machine.
+- [ ] Option to choose department.
+- [ ] Update README.
